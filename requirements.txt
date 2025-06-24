@@ -1,0 +1,11 @@
+torch
+pandas
+transformers
+tqdm
+matplotlib
+requests
+beautifulsoup4
+scikit-learn
+numpy
+sentence-transformers
+gensim

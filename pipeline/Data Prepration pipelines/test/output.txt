@@ -1,0 +1,9 @@
+
+📊 Validation Summary
+----------------------------------------
+Total users processed: 6040
+Users with 100% match: 6040/6040
+Total missing rated movies: 0
+Accuracy (% of users fully matched): 100.00%
+----------------------------------------
+✅ All users have their rated movies correctly clustered.

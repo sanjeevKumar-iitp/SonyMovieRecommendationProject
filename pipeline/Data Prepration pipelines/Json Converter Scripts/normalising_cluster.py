@@ -32,73 +32,84 @@ def add_missing_movies_to_new_cluster(clusters_data, user_ratings):
         rated_movies = user_ratings[user_id]
 
         existing_clusters = []
-        clustered_movies = set()
         for cluster in user_data.get("clusters", []):
-            updated_cluster = {
-                "clusterID": cluster["clusterID"],
-                "movies": []
-            }
+            cleaned_movies = []
+
             for entry in cluster.get("movies", []):
                 if isinstance(entry, dict):
                     movie_id = entry.get("movie_ID")
                 else:
                     movie_id = entry
-                if movie_id:
-                    updated_cluster["movies"].append(movie_id)
-                    clustered_movies.add(movie_id)
-            existing_clusters.append(updated_cluster)
+
+                if movie_id and movie_id in rated_movies:
+                    cleaned_movies.append(movie_id)
+                else:
+                    print(f"🗑️ Removed un-rated movie {movie_id} from cluster {cluster['clusterID']}")
+
+            # Only keep cluster if it still has valid movies
+            if cleaned_movies:
+                updated_cluster = {
+                    "clusterID": cluster["clusterID"],
+                    "movies": cleaned_movies
+                }
+                existing_clusters.append(updated_cluster)
+            else:
+                print(f"🧹 Cluster {cluster['clusterID']} became empty after cleaning — removed.")
+
+        # Now find missing movies (already rated, not in any cluster)
+        clustered_movies = set()
+        for c in existing_clusters:
+            clustered_movies.update(c["movies"])
 
         missing_movies = [mid for mid in rated_movies if mid not in clustered_movies]
 
-        if not missing_movies:
-            updated_user_data = {
-                "userID": user_data["userID"],
-                "clusters": existing_clusters
+        # Add missing movies sorted by timestamp into a new cluster
+        if missing_movies:
+            print(f"📎 Adding {len(missing_movies)} missing movies to User {user_id}")
+
+            missing_with_time = [(mid, rated_movies[mid]) for mid in missing_movies]
+            missing_with_time.sort(key=lambda x: x[1])
+            sorted_missing = [mid for mid, _ in missing_with_time]
+
+            existing_ids = [int(c["clusterID"]) for c in existing_clusters]
+            next_id = max(existing_ids) + 1 if existing_ids else 0
+
+            new_cluster = {
+                "clusterID": str(next_id),
+                "movies": sorted_missing
             }
-            updated_clusters.append(updated_user_data)
-            continue
 
-        print(f"📎 Adding {len(missing_movies)} missing movies to User {user_id}")
+            existing_clusters.append(new_cluster)
 
-        missing_with_time = [(mid, rated_movies[mid]) for mid in missing_movies]
-        missing_with_time.sort(key=lambda x: x[1])
-        sorted_missing = [mid for mid, _ in missing_with_time]
-
-        existing_ids = [int(c["clusterID"]) for c in existing_clusters]
-        next_id = max(existing_ids) + 1 if existing_ids else 0
-
-        new_cluster = {
-            "clusterID": str(next_id),
-            "movies": sorted_missing
-        }
-
+        # Final user data
         updated_user_data = {
             "userID": user_data["userID"],
-            "clusters": existing_clusters + [new_cluster]
+            "clusters": existing_clusters
         }
 
         updated_clusters.append(updated_user_data)
 
     return updated_clusters
 
+
 # ———————————————— #
 #       RUN SCRIPT (Only when executed directly)
 # ———————————————— #
 
 if __name__ == "__main__":
-    CLUSTER_JSON_PATH = 'pipeline/output/json/cluster_json_data_with_id.json'
-    RATINGS_DAT_PATH = 'dataset/ratings.dat'
-    OUTPUT_JSON_PATH = 'pipeline/output/json/clusters_with_missing_added.json'
+    CLUSTER_JSON_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation copy/pipeline/Data Prepration pipelines/output/json/cluster_json_data_with_id.json'
+    RATINGS_DAT_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation copy/dataset/ratings.dat'
+    OUTPUT_JSON_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation copy/pipeline/Data Prepration pipelines/output/json/master_cluster_data.json'
 
     print("🔍 Loading ratings and clusters...")
     ratings = load_ratings(RATINGS_DAT_PATH)
     clusters = load_clusters(CLUSTER_JSON_PATH)
 
-    print("\n🛠️ Adding missing rated movies to new cluster...")
+    print("\n🛠️ Cleaning clusters and adding missing rated movies...")
     updated_clusters = add_missing_movies_to_new_cluster(clusters, ratings)
 
-    print(f"\n💾 Saving updated clusters to {OUTPUT_JSON_PATH}")
+    print(f"\n💾 Saving cleaned & updated clusters to {OUTPUT_JSON_PATH}")
     with open(OUTPUT_JSON_PATH, 'w', encoding='utf-8') as f:
         json.dump(updated_clusters, f, indent=2)
 
-    print("\n✅ Done!")
+    print("\n✅ Done! Clusters are now cleaned and complete.")

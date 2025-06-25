@@ -20,7 +20,7 @@ def load_clusters(cluster_json_file):
     with open(cluster_json_file, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def validate_clusters_against_ratings(clusters, user_ratings, output_file="/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation/pipeline/test/output.txt"):
+def validate_clusters_against_ratings(clusters, user_ratings, output_file="/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation/pipeline/Data Prepration pipelines/test/output.txt"):
     full_output = []
     total_users = 0
     perfect_users = 0
@@ -86,8 +86,8 @@ def validate_clusters_against_ratings(clusters, user_ratings, output_file="/Volu
 #       CONFIGURATION
 # ———————————————— #
 
-CLUSTER_JSON_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation copy/pipeline/Data Prepration pipelines/output/json/master_cluster_data.json'
-RATINGS_DAT_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation copy/dataset/ratings.dat'
+CLUSTER_JSON_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation/pipeline/Data Prepration pipelines/output/json/master_cluster_data.json'
+RATINGS_DAT_PATH = '/Volumes/Sanjeev HD/M.TECH  IIT-P/Sem - 3 research/SonyResearchMovieRecommendation/dataset/ratings.dat'
 
 # ———————————————— #
 #       RUN TEST
